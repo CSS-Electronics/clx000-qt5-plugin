@@ -1,0 +1,9 @@
+{
+  "name": "clx000canbus",
+  "version-string": "0.1.0-dev",
+  "dependencies": [
+    "qt5",
+    "qt5-serialbus",
+    "qt5-serialport"
+  ]
+}
