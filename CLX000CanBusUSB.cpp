@@ -22,7 +22,7 @@ bool CLX000CanBusUSB::open() {
     frameCount = 0;
     setState(CanBusDeviceState::ConnectingState);
 
-    bool status = port.open(QSerialPort::OpenModeFlag::ReadOnly);
+    bool status = port.open(QSerialPort::OpenModeFlag::ReadWrite);
 
     if(status) {
         setState(CanBusDeviceState::ConnectedState);
@@ -42,7 +42,19 @@ void CLX000CanBusUSB::close() {
 }
 
 bool CLX000CanBusUSB::writeFrame(const QCanBusFrame &frame) {
-    return false;
+    bool resultFlag = false;
+
+    QByteArray packedFrame;
+    resultFlag = packFrame(frame, packedFrame);
+    qint64 bytesWritten = 0;
+
+    if( resultFlag ) {
+        bytesWritten = port.write(packedFrame);
+
+        resultFlag = (bytesWritten == packedFrame.length());
+    }
+
+    return resultFlag;
 }
 
 QString CLX000CanBusUSB::interpretErrorFrame(const QCanBusFrame &errorFrame) {
@@ -50,7 +62,6 @@ QString CLX000CanBusUSB::interpretErrorFrame(const QCanBusFrame &errorFrame) {
 }
 
 void CLX000CanBusUSB::dataAvailable() {
-    //auto const data = port.readAll();
     auto const data = port.read(1024);
 
     // Copy all data except the zero termination byte.

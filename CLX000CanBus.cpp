@@ -171,3 +171,46 @@ bool CLX000CanBus::attemptParseSequence(QByteArray sequence) {
 
     return true;
 }
+
+bool CLX000CanBus::packFrame(QCanBusFrame const& frame, QByteArray &packedFrame) {
+    QByteArray payloadArray;
+    QDataStream payloadStream(&payloadArray, QIODevice::ReadWrite);
+    payloadStream.setByteOrder(QDataStream::ByteOrder::BigEndian);
+
+    payloadStream << static_cast<quint8>(0x03);
+
+    /* Write CAN ID (Big endian) */
+    quint32 canID = frame.frameId() & 0x1FFFFFFF;
+    if( frame.hasExtendedFrameFormat() ) {
+        canID |= 0x20000000;
+    }
+    payloadStream << canID;
+
+    int dataLength = frame.payload().length();
+    if(0 <= dataLength && dataLength <= 8) {
+        auto DLC = static_cast<quint8>(dataLength);
+        payloadStream << DLC;
+    }
+
+    payloadStream.writeRawData(frame.payload().data(), dataLength);
+
+    /* Calculate checksum */
+    quint16 checksum = calculateCRC16(payloadArray);
+
+    /* Write checksum */
+    payloadStream << checksum;
+
+    /* Escape any 0x7E sequences */
+    packedFrame.append(0x07E);
+    for (char const& byteValue: payloadArray) {
+        if( byteValue == 0x7E ) {
+            packedFrame.append(static_cast<quint8>(0x7D));
+            packedFrame.append(static_cast<quint8>(byteValue ^ 0b00100000) );
+        } else {
+            packedFrame.append(byteValue );
+        }
+    }
+    packedFrame.append(0x07E);
+
+    return true;
+}

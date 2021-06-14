@@ -12,5 +12,6 @@ protected:
     QVector<QCanBusFrame> frames;
     void attemptParse();
     bool attemptParseSequence(QByteArray sequence);
+    bool packFrame(QCanBusFrame const& frame, QByteArray &packedFrame);
     quint64 frameCount;
 };
