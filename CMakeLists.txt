@@ -46,7 +46,7 @@ set_property(TARGET ${RELEASE_NAME} PROPERTY CXX_STANDARD_REQUIRED YES)
 set_property(TARGET ${RELEASE_NAME} PROPERTY CXX_EXTENSIONS NO)
 
 # General Qt configuration.
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_compile_definitions(${RELEASE_NAME} QT_DEBUG)
 else()
     add_compile_definitions(${RELEASE_NAME} QT_NO_DEBUG)
